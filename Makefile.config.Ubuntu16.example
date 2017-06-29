@@ -25,7 +25,7 @@ OPENCV_VERSION := 3
 # CUSTOM_CXX := g++
 
 # CUDA directory contains bin/ and lib/ directories that we need.
-CUDA_DIR := $PREFIX
+CUDA_DIR := $(PREFIX)
 # On Ubuntu 14.04, if cuda tools are installed via
 # "sudo apt-get install nvidia-cuda-toolkit" then use this instead:
 # CUDA_DIR := /usr
@@ -74,11 +74,11 @@ BLAS := atlas
 # BLAS_LIB := $(shell brew --prefix openblas)/lib
 
 # Caffe directory
-CAFFE_DIR := $PREFIX
+CAFFE_DIR := $(PREFIX)
 
 # Whatever else you find you need goes here.
-INCLUDE_DIRS := $PREFIX/include /usr/local/include /usr/include/hdf5/serial
-LIBRARY_DIRS := $PREFIX/lib $PREFIX/lib64 /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/hdf5/serial
+INCLUDE_DIRS := $(PREFIX)/include /usr/local/include /usr/include/hdf5/serial
+LIBRARY_DIRS := $(PREFIX)/lib $(PREFIX)/lib64 /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/hdf5/serial
 
 # If Homebrew is installed at a non standard location (for example your home directory) and you use it for general dependencies
 # INCLUDE_DIRS += $(shell brew --prefix)/include
@@ -89,7 +89,7 @@ LIBRARY_DIRS := $PREFIX/lib $PREFIX/lib64 /usr/local/lib /usr/lib /usr/lib/x86_6
 # USE_PKG_CONFIG := 1
 
 BUILD_DIR := build
-DISTRIBUTE_DIR := $PREFIX
+DISTRIBUTE_DIR := $(PREFIX)
 
 # Uncomment for debugging. Does not work on OSX due to https://github.com/BVLC/caffe/issues/171
 # DEBUG := 1
