@@ -160,16 +160,18 @@ ifeq ($(USE_LMDB), 1)
 	LIBRARIES += lmdb
 endif
 ifeq ($(USE_OPENCV), 1)
-	LIBRARIES += opencv_core opencv_highgui opencv_imgproc
 
 	ifeq ($(OPENCV_VERSION), 3)
-		LIBRARIES += opencv_imgcodecs opencv_videoio
+		LIBRARIES += opencv_core3 opencv_highgui3 opencv_imgproc3 opencv_imgcodecs opencv_videoio
 	else
-		LIBRARIES += opencv_contrib
+		LIBRARIES += opencv_core opencv_highgui opencv_imgproc  opencv_contrib
 	endif
 
 endif
 WARNINGS := -Wall -Wno-sign-compare
+
+$(info $$var is [${LIBRARIES}])
+
 
 ##############################
 # Set build directories
@@ -386,6 +388,7 @@ endif
 # 		$(foreach library,$(LIBRARIES),-l$(library)) -Wl,-rpath=$(CAFFE_DIR)/lib
 LDFLAGS += $(foreach librarydir,$(LIBRARY_DIRS),-L$(librarydir)) $(PKG_CONFIG) \
 		$(foreach library,$(LIBRARIES),-l$(library))
+$(info $$var is [${LDFLAGS}])
 
 ##############################
 # Define build targets
