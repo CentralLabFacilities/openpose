@@ -393,10 +393,11 @@ $(info $$var is [${LDFLAGS}])
 ##############################
 # Define build targets
 ##############################
-.PHONY: all lib clean docs linecount lint lintclean examples $(DIST_ALIASES) \
+.PHONY: all lib clean docs linecount lint lintclean $(DIST_ALIASES) \
 	warn everything
 
-all: lib examples
+# all: lib examples
+all: lib
 
 lib: $(STATIC_NAME) $(DYNAMIC_NAME)
 
@@ -404,7 +405,7 @@ everything: $(EVERYTHING_TARGETS)
 
 linecount:
 	cloc --read-lang-def=$(PROJECT).cloc \
-		src/$(PROJECT) include/$(PROJECT) examples
+		src/$(PROJECT) include/$(PROJECT)
 
 lint: $(EMPTY_LINT_REPORT)
 
@@ -436,7 +437,7 @@ $(LINT_OUTPUTS): $(LINT_OUTPUT_DIR)/%.lint.txt : % $(LINT_SCRIPT) | $(LINT_OUTPU
 		> $@ \
 		|| true
 
-examples: $(EXAMPLE_BINS)
+# examples: $(EXAMPLE_BINS)
 
 warn: $(EMPTY_WARN_REPORT)
 
