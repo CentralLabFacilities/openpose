@@ -110,7 +110,7 @@ OBJS := $(CXX_OBJS) $(CU_OBJS)
 EXAMPLE_OBJS := $(addprefix $(BUILD_DIR)/, ${EXAMPLE_SRCS:.cpp=.o})
 # Output files for automatic dependency generation
 DEPS := ${EXAMPLE_OBJS:.o=.d} ${CXX_OBJS:.o=.d} ${CU_OBJS:.o=.d}
-EXAMPLE_BINS := ${EXAMPLE_OBJS:.o=.bin}
+# EXAMPLE_BINS := ${EXAMPLE_OBJS:.o=.bin}
 
 ##############################
 # Derive compiler warning dump locations
@@ -492,10 +492,10 @@ $(BUILD_DIR)/cuda/%.o: %.cu | $(ALL_BUILD_DIRS)
 		|| (cat $@.$(WARNS_EXT); exit 1)
 	@ cat $@.$(WARNS_EXT)
 
-$(EXAMPLE_BINS): %.bin : %.o | $(DYNAMIC_NAME)
-	@ echo CXX/LD -o $@
-	$(Q)$(CXX) $< -o $@ $(LINKFLAGS) -l$(LIBRARY_NAME) $(LDFLAGS) \
-		-Wl,-rpath,$(ORIGIN)/../../lib
+# $(EXAMPLE_BINS): %.bin : %.o | $(DYNAMIC_NAME)
+#	@ echo CXX/LD -o $@
+#	$(Q)$(CXX) $< -o $@ $(LINKFLAGS) -l$(LIBRARY_NAME) $(LDFLAGS) \
+#		-Wl,-rpath,$(ORIGIN)/../../lib
 
 clean:
 	@- $(RM) -rf $(ALL_BUILD_DIRS)
@@ -510,7 +510,7 @@ $(DISTRIBUTE_DIR): all
 	# add include
 	cp -r include $(DISTRIBUTE_DIR)/
 	# add example binaries
-	cp $(EXAMPLE_BINS) $(DISTRIBUTE_DIR)/bin
+	# cp $(EXAMPLE_BINS) $(DISTRIBUTE_DIR)/bin
 	# add libraries
 	cp $(STATIC_NAME) $(DISTRIBUTE_DIR)/lib
 	install -m 644 $(DYNAMIC_NAME) $(DISTRIBUTE_DIR)/lib
