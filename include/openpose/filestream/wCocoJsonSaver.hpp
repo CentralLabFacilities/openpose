@@ -1,7 +1,7 @@
 #ifndef OPENPOSE_FILESTREAM_W_COCO_JSON_SAVER_HPP
 #define OPENPOSE_FILESTREAM_W_COCO_JSON_SAVER_HPP
 
-#include <memory> // std::shared_ptr
+#include <openpose/core/common.hpp>
 #include <openpose/filestream/cocoJsonSaver.hpp>
 #include <openpose/thread/workerConsumer.hpp>
 
@@ -12,6 +12,8 @@ namespace op
     {
     public:
         explicit WCocoJsonSaver(const std::shared_ptr<CocoJsonSaver>& cocoJsonSaver);
+
+        virtual ~WCocoJsonSaver();
 
         void initializationOnThread();
 
@@ -29,15 +31,17 @@ namespace op
 
 
 // Implementation
-#include <openpose/utilities/errorAndLog.hpp>
-#include <openpose/utilities/macros.hpp>
 #include <openpose/utilities/pointerContainer.hpp>
-#include <openpose/utilities/profiler.hpp>
 namespace op
 {
     template<typename TDatums>
     WCocoJsonSaver<TDatums>::WCocoJsonSaver(const std::shared_ptr<CocoJsonSaver>& cocoJsonSaver) :
         spCocoJsonSaver{cocoJsonSaver}
+    {
+    }
+
+    template<typename TDatums>
+    WCocoJsonSaver<TDatums>::~WCocoJsonSaver()
     {
     }
 
@@ -61,16 +65,13 @@ namespace op
                 // Profiling speed
                 const auto profilerKey = Profiler::timerInit(__LINE__, __FUNCTION__, __FILE__);
                 // T* to T
-                const auto& tDatum = tDatums->at(0);
+                const auto& tDatumPtr = tDatums->at(0);
                 // Record json in COCO format
-                const std::string stringToRemove = "COCO_val2014_";
-                const auto stringToRemoveEnd = tDatum.name.find(stringToRemove) + stringToRemove.size();
-                const auto imageId = std::stoull(tDatum.name.substr(stringToRemoveEnd, tDatum.name.size() - stringToRemoveEnd));
-                // Record json in COCO format if file within desired range of images
-                spCocoJsonSaver->record(tDatum.poseKeypoints, imageId);
+                spCocoJsonSaver->record(
+                    tDatumPtr->poseKeypoints, tDatumPtr->poseScores, tDatumPtr->name, tDatumPtr->frameNumber);
                 // Profiling speed
                 Profiler::timerEnd(profilerKey);
-                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__, Profiler::DEFAULT_X);
+                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__);
                 // Debugging log
                 dLog("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
             }

@@ -2,7 +2,9 @@
 #define OPENPOSE_THREAD_W_ID_GENERATOR_HPP
 
 #include <queue> // std::priority_queue
-#include "worker.hpp"
+#include <openpose/core/common.hpp>
+#include <openpose/thread/worker.hpp>
+#include <openpose/utilities/pointerContainer.hpp>
 
 namespace op
 {
@@ -11,6 +13,8 @@ namespace op
     {
     public:
         explicit WIdGenerator();
+
+        virtual ~WIdGenerator();
 
         void initializationOnThread();
 
@@ -28,14 +32,17 @@ namespace op
 
 
 // Implementation
-#include <openpose/utilities/errorAndLog.hpp>
-#include <openpose/utilities/macros.hpp>
 #include <openpose/utilities/pointerContainer.hpp>
 namespace op
 {
     template<typename TDatums>
     WIdGenerator<TDatums>::WIdGenerator() :
         mGlobalCounter{0ull}
+    {
+    }
+
+    template<typename TDatums>
+    WIdGenerator<TDatums>::~WIdGenerator()
     {
     }
 
@@ -51,11 +58,24 @@ namespace op
         {
             if (checkNoNullNorEmpty(tDatums))
             {
+                // Debugging log
+                dLog("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
+                // Profiling speed
+                const auto profilerKey = Profiler::timerInit(__LINE__, __FUNCTION__, __FILE__);
                 // Add ID
-                for (auto& tDatum : *tDatums)
-                    tDatum.id = mGlobalCounter;
+                for (auto& tDatumPtr : *tDatums)
+                    // To avoid overwritting ID if e.g., custom input has already filled it
+                    if (tDatumPtr->id == std::numeric_limits<unsigned long long>::max())
+                        tDatumPtr->id = mGlobalCounter;
                 // Increase ID
-                mGlobalCounter++;
+                const auto& tDatumPtr = (*tDatums)[0];
+                if (tDatumPtr->subId == tDatumPtr->subIdMax)
+                    mGlobalCounter++;
+                // Profiling speed
+                Profiler::timerEnd(profilerKey);
+                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__);
+                // Debugging log
+                dLog("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
             }
         }
         catch (const std::exception& e)

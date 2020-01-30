@@ -2,35 +2,45 @@
 #define OPENPOSE_POSE_RENDER_POSE_HPP
 
 #include <opencv2/core/core.hpp> // cv::Mat
-#include <openpose/core/array.hpp>
-#include <openpose/core/point.hpp>
-#include "enumClasses.hpp"
-#include "poseParameters.hpp"
+#include <openpose/core/common.hpp>
+#include <openpose/pose/enumClasses.hpp>
+#include <openpose/pose/poseParametersRender.hpp>
 
 namespace op
 {
-    void renderPoseKeypointsCpu(Array<float>& frameArray, const Array<float>& poseKeypoints, const PoseModel poseModel,
-                                const bool blendOriginalFrame = true);
+    OP_API void renderPoseKeypointsCpu(
+        Array<float>& frameArray, const Array<float>& poseKeypoints, const PoseModel poseModel,
+        const float renderThreshold, const bool blendOriginalFrame = true);
 
-    void renderPoseKeypointsGpu(float* framePtr, const PoseModel poseModel, const int numberPeople, const Point<int>& frameSize,
-                                const float* const posePtr, const bool googlyEyes = false, const bool blendOriginalFrame = true,
-                                const float alphaBlending = POSE_DEFAULT_ALPHA_KEYPOINT);
+    void renderPoseKeypointsGpu(
+        float* framePtr, float* maxPtr, float* minPtr, float* scalePtr, const PoseModel poseModel,
+        const int numberPeople, const Point<int>& frameSize, const float* const posePtr,
+        const float renderThreshold, const bool googlyEyes = false, const bool blendOriginalFrame = true,
+        const float alphaBlending = POSE_DEFAULT_ALPHA_KEYPOINT);
 
-    void renderPoseHeatMapGpu(float* frame, const PoseModel poseModel, const Point<int>& frameSize, const float* const heatmap,
-                              const Point<int>& heatmapSize, const float scaleToKeepRatio, const int part,
-                              const float alphaBlending = POSE_DEFAULT_ALPHA_HEAT_MAP);
+    void renderPoseHeatMapGpu(
+        float* frame, const Point<int>& frameSize, const float* const heatMapPtr, const Point<int>& heatMapSize,
+        const float scaleToKeepRatio, const unsigned int part,
+        const float alphaBlending = POSE_DEFAULT_ALPHA_HEAT_MAP);
 
-    void renderPoseHeatMapsGpu(float* frame, const PoseModel poseModel, const Point<int>& frameSize, const float* const heatmap,
-                               const Point<int>& heatmapSize, const float scaleToKeepRatio,
-                               const float alphaBlending = POSE_DEFAULT_ALPHA_HEAT_MAP);
+    void renderPoseHeatMapsGpu(
+        float* frame, const PoseModel poseModel, const Point<int>& frameSize, const float* const heatMapPtr,
+        const Point<int>& heatMapSize, const float scaleToKeepRatio,
+        const float alphaBlending = POSE_DEFAULT_ALPHA_HEAT_MAP);
 
-    void renderPosePAFGpu(float* framePtr, const PoseModel poseModel, const Point<int>& frameSize, const float* const heatmapPtr,
-                          const Point<int>& heatmapSize, const float scaleToKeepRatio, const int part,
-                          const float alphaBlending = POSE_DEFAULT_ALPHA_HEAT_MAP);
+    void renderPosePAFGpu(
+        float* framePtr, const PoseModel poseModel, const Point<int>& frameSize, const float* const heatMapPtr,
+        const Point<int>& heatMapSize, const float scaleToKeepRatio, const int part,
+        const float alphaBlending = POSE_DEFAULT_ALPHA_HEAT_MAP);
 
-    void renderPosePAFsGpu(float* framePtr, const PoseModel poseModel, const Point<int>& frameSize, const float* const heatmapPtr,
-                           const Point<int>& heatmapSize, const float scaleToKeepRatio,
-                           const float alphaBlending = POSE_DEFAULT_ALPHA_HEAT_MAP);
+    void renderPosePAFsGpu(
+        float* framePtr, const PoseModel poseModel, const Point<int>& frameSize, const float* const heatMapPtr,
+        const Point<int>& heatMapSize, const float scaleToKeepRatio,
+        const float alphaBlending = POSE_DEFAULT_ALPHA_HEAT_MAP);
+
+    void renderPoseDistanceGpu(
+        float* framePtr, const Point<int>& frameSize, const float* const heatMapPtr, const Point<int>& heatMapSize,
+        const float scaleToKeepRatio, const unsigned int part, const float alphaBlending = POSE_DEFAULT_ALPHA_HEAT_MAP);
 }
 
 #endif // OPENPOSE_POSE_RENDER_POSE_HPP

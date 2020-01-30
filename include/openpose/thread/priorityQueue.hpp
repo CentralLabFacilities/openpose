@@ -2,8 +2,8 @@
 #define OPENPOSE_THREAD_PRIORITY_QUEUE_HPP 
 
 #include <queue> // std::priority_queue
-#include <openpose/utilities/macros.hpp>
-#include "queueBase.hpp"
+#include <openpose/core/common.hpp>
+#include <openpose/thread/queueBase.hpp>
 
 namespace op
 {
@@ -12,6 +12,8 @@ namespace op
     {
     public:
         explicit PriorityQueue(const long long maxSize = 256);
+
+        virtual ~PriorityQueue();
 
         TDatums front() const;
 
@@ -28,7 +30,6 @@ namespace op
 
 // Implementation
 #include <type_traits> // std::is_same
-#include <openpose/utilities/errorAndLog.hpp>
 namespace op
 {
     template<typename TDatums, typename TQueue>
@@ -39,6 +40,11 @@ namespace op
         typedef typename TQueue::value_type underlyingValueType;
         static_assert(std::is_same<TDatums, underlyingValueType>::value,
                       "Error: The type of the queue must be the same as the type of the container");
+    }
+
+    template<typename TDatums, typename TQueue>
+    PriorityQueue<TDatums, TQueue>::~PriorityQueue()
+    {
     }
 
     template<typename TDatums, typename TQueue>

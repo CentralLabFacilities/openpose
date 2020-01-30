@@ -1,9 +1,9 @@
 #ifndef OPENPOSE_HAND_W_HAND_DETECTOR_HPP
 #define OPENPOSE_HAND_W_HAND_DETECTOR_HPP
 
-#include <memory> // std::shared_ptr
+#include <openpose/core/common.hpp>
+#include <openpose/hand/handDetector.hpp>
 #include <openpose/thread/worker.hpp>
-#include "handRenderer.hpp"
 
 namespace op
 {
@@ -12,6 +12,8 @@ namespace op
     {
     public:
         explicit WHandDetector(const std::shared_ptr<HandDetector>& handDetector);
+
+        virtual ~WHandDetector();
 
         void initializationOnThread();
 
@@ -29,15 +31,17 @@ namespace op
 
 
 // Implementation
-#include <openpose/utilities/errorAndLog.hpp>
-#include <openpose/utilities/macros.hpp>
 #include <openpose/utilities/pointerContainer.hpp>
-#include <openpose/utilities/profiler.hpp>
 namespace op
 {
     template<typename TDatums>
     WHandDetector<TDatums>::WHandDetector(const std::shared_ptr<HandDetector>& handDetector) :
         spHandDetector{handDetector}
+    {
+    }
+
+    template<typename TDatums>
+    WHandDetector<TDatums>::~WHandDetector()
     {
     }
 
@@ -58,11 +62,11 @@ namespace op
                 // Profiling speed
                 const auto profilerKey = Profiler::timerInit(__LINE__, __FUNCTION__, __FILE__);
                 // Detect people hand
-                for (auto& tDatum : *tDatums)
-                    tDatum.handRectangles = spHandDetector->detectHands(tDatum.poseKeypoints, tDatum.scaleInputToOutput);
+                for (auto& tDatumPtr : *tDatums)
+                    tDatumPtr->handRectangles = spHandDetector->detectHands(tDatumPtr->poseKeypoints);
                 // Profiling speed
                 Profiler::timerEnd(profilerKey);
-                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__, Profiler::DEFAULT_X);
+                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__);
                 // Debugging log
                 dLog("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
             }

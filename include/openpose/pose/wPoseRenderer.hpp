@@ -1,9 +1,9 @@
 #ifndef OPENPOSE_POSE_W_POSE_RENDERER_HPP
 #define OPENPOSE_POSE_W_POSE_RENDERER_HPP
 
-#include <memory> // std::shared_ptr
+#include <openpose/core/common.hpp>
+#include <openpose/pose/poseRenderer.hpp>
 #include <openpose/thread/worker.hpp>
-#include "poseRenderer.hpp"
 
 namespace op
 {
@@ -12,6 +12,8 @@ namespace op
     {
     public:
         explicit WPoseRenderer(const std::shared_ptr<PoseRenderer>& poseRendererSharedPtr);
+
+        virtual ~WPoseRenderer();
 
         void initializationOnThread();
 
@@ -29,10 +31,7 @@ namespace op
 
 
 // Implementation
-#include <openpose/utilities/errorAndLog.hpp>
-#include <openpose/utilities/macros.hpp>
 #include <openpose/utilities/pointerContainer.hpp>
-#include <openpose/utilities/profiler.hpp>
 namespace op
 {
     template<typename TDatums>
@@ -42,9 +41,21 @@ namespace op
     }
 
     template<typename TDatums>
+    WPoseRenderer<TDatums>::~WPoseRenderer()
+    {
+    }
+
+    template<typename TDatums>
     void WPoseRenderer<TDatums>::initializationOnThread()
     {
-        spPoseRenderer->initializationOnThread();
+        try
+        {
+            spPoseRenderer->initializationOnThread();
+        }
+        catch (const std::exception& e)
+        {
+            error(e.what(), __LINE__, __FUNCTION__, __FILE__);
+        }
     }
 
     template<typename TDatums>
@@ -59,11 +70,13 @@ namespace op
                 // Profiling speed
                 const auto profilerKey = Profiler::timerInit(__LINE__, __FUNCTION__, __FILE__);
                 // Render people pose
-                for (auto& tDatum : *tDatums)
-                    tDatum.elementRendered = spPoseRenderer->renderPose(tDatum.outputData, tDatum.poseKeypoints, (float)tDatum.scaleNetToOutput);
+                for (auto& tDatumPtr : *tDatums)
+                    tDatumPtr->elementRendered = spPoseRenderer->renderPose(
+                        tDatumPtr->outputData, tDatumPtr->poseKeypoints, (float)tDatumPtr->scaleInputToOutput,
+                        (float)tDatumPtr->scaleNetToOutput);
                 // Profiling speed
                 Profiler::timerEnd(profilerKey);
-                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__, Profiler::DEFAULT_X);
+                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__);
                 // Debugging log
                 dLog("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
             }

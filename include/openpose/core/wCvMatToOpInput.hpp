@@ -1,9 +1,9 @@
 #ifndef OPENPOSE_CORE_W_CV_MAT_TO_OP_INPUT_HPP
 #define OPENPOSE_CORE_W_CV_MAT_TO_OP_INPUT_HPP
 
-#include <memory> // std::shared_ptr
+#include <openpose/core/common.hpp>
+#include <openpose/core/cvMatToOpInput.hpp>
 #include <openpose/thread/worker.hpp>
-#include "cvMatToOpInput.hpp"
 
 namespace op
 {
@@ -12,6 +12,8 @@ namespace op
     {
     public:
         explicit WCvMatToOpInput(const std::shared_ptr<CvMatToOpInput>& cvMatToOpInput);
+
+        virtual ~WCvMatToOpInput();
 
         void initializationOnThread();
 
@@ -29,16 +31,17 @@ namespace op
 
 
 // Implementation
-#include <openpose/utilities/errorAndLog.hpp>
-#include <openpose/utilities/macros.hpp>
-#include <openpose/utilities/openCv.hpp>
 #include <openpose/utilities/pointerContainer.hpp>
-#include <openpose/utilities/profiler.hpp>
 namespace op
 {
     template<typename TDatums>
     WCvMatToOpInput<TDatums>::WCvMatToOpInput(const std::shared_ptr<CvMatToOpInput>& cvMatToOpInput) :
         spCvMatToOpInput{cvMatToOpInput}
+    {
+    }
+
+    template<typename TDatums>
+    WCvMatToOpInput<TDatums>::~WCvMatToOpInput()
     {
     }
 
@@ -59,11 +62,12 @@ namespace op
                 // Profiling speed
                 const auto profilerKey = Profiler::timerInit(__LINE__, __FUNCTION__, __FILE__);
                 // cv::Mat -> float*
-                for (auto& tDatum : *tDatums)
-                    std::tie(tDatum.inputNetData, tDatum.scaleRatios) = spCvMatToOpInput->format(tDatum.cvInputData);
+                for (auto& tDatumPtr : *tDatums)
+                    tDatumPtr->inputNetData = spCvMatToOpInput->createArray(
+                        tDatumPtr->cvInputData, tDatumPtr->scaleInputToNetInputs, tDatumPtr->netInputSizes);
                 // Profiling speed
                 Profiler::timerEnd(profilerKey);
-                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__, Profiler::DEFAULT_X);
+                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__);
                 // Debugging log
                 dLog("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
             }

@@ -1,8 +1,9 @@
 #ifndef OPENPOSE_CORE_W_KEYPOINT_SCALER_HPP
 #define OPENPOSE_CORE_W_KEYPOINT_SCALER_HPP
 
+#include <openpose/core/common.hpp>
+#include <openpose/core/keypointScaler.hpp>
 #include <openpose/thread/worker.hpp>
-#include "keypointScaler.hpp"
 
 namespace op
 {
@@ -11,6 +12,8 @@ namespace op
     {
     public:
         explicit WKeypointScaler(const std::shared_ptr<KeypointScaler>& keypointScaler);
+
+        virtual ~WKeypointScaler();
 
         void initializationOnThread();
 
@@ -26,15 +29,17 @@ namespace op
 
 
 // Implementation
-#include <openpose/utilities/errorAndLog.hpp>
-#include <openpose/utilities/macros.hpp>
 #include <openpose/utilities/pointerContainer.hpp>
-#include <openpose/utilities/profiler.hpp>
 namespace op
 {
     template<typename TDatums>
     WKeypointScaler<TDatums>::WKeypointScaler(const std::shared_ptr<KeypointScaler>& keypointScaler) :
         spKeypointScaler{keypointScaler}
+    {
+    }
+
+    template<typename TDatums>
+    WKeypointScaler<TDatums>::~WKeypointScaler()
     {
     }
 
@@ -55,14 +60,22 @@ namespace op
                 // Profiling speed
                 const auto profilerKey = Profiler::timerInit(__LINE__, __FUNCTION__, __FILE__);
                 // Rescale pose data
-                for (auto& tDatum : *tDatums)
+                for (auto& tDatumPtr : *tDatums)
                 {
-                    std::vector<Array<float>> arraysToScale{tDatum.poseKeypoints, tDatum.handKeypoints[0], tDatum.handKeypoints[1], tDatum.faceKeypoints};
-                    spKeypointScaler->scale(arraysToScale, (float)tDatum.scaleInputToOutput, (float)tDatum.scaleNetToOutput, Point<int>{tDatum.cvInputData.cols, tDatum.cvInputData.rows});
+                    std::vector<Array<float>> arraysToScale{
+                        tDatumPtr->poseKeypoints, tDatumPtr->handKeypoints[0],
+                        tDatumPtr->handKeypoints[1], tDatumPtr->faceKeypoints};
+                    spKeypointScaler->scale(
+                        arraysToScale, tDatumPtr->scaleInputToOutput, tDatumPtr->scaleNetToOutput,
+                        Point<int>{tDatumPtr->cvInputData.cols, tDatumPtr->cvInputData.rows});
+                    // Rescale part candidates
+                    spKeypointScaler->scale(
+                        tDatumPtr->poseCandidates, tDatumPtr->scaleInputToOutput, tDatumPtr->scaleNetToOutput,
+                        Point<int>{tDatumPtr->cvInputData.cols, tDatumPtr->cvInputData.rows});
                 }
                 // Profiling speed
                 Profiler::timerEnd(profilerKey);
-                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__, Profiler::DEFAULT_X);
+                Profiler::printAveragedTimeMsOnIterationX(profilerKey, __LINE__, __FUNCTION__, __FILE__);
                 // Debugging log
                 dLog("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
             }
